@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
+import { dialHost, listenHost } from "../shared/listen-host";
 import { listenPort } from "../shared/listen-port";
 
 /*
@@ -74,19 +75,29 @@ const apiPort = listenPort(process.env.SERVER_PORT, 3001);
 if (!apiPort.ok) {
   throw new Error(apiPort.reason.replace(/^PORT /, "SERVER_PORT "));
 }
+const appHost = listenHost(process.env.APP_HOST);
+if (!appHost.ok) {
+  throw new Error(appHost.reason.replace(/^HOST /, "APP_HOST "));
+}
+const apiHost = listenHost(process.env.SERVER_HOST);
+if (!apiHost.ok) {
+  throw new Error(apiHost.reason.replace(/^HOST /, "SERVER_HOST "));
+}
 
 const serving = {
   // Both loopbacks, which is what `::` gets you: Node opens a dual-stack socket, so 127.0.0.1 and
   // ::1 both answer. Left to itself Vite binds whichever one this runtime resolves `localhost`
   // to, which is ::1 under Node and 127.0.0.1 under bun, and the other address is then refused.
   // Whoever is told the URL has no way to know which they were given.
+  // `::` is also every other interface, so the LAN reaches this port too. APP_HOST=127.0.0.1 keeps
+  // it to this machine, which a deployment with OPENBOT_SINGLE_USER=true wants; see listen-host.ts.
   // Empty APP_PORT=/SERVER_PORT= is unset (compose / leftover .env), not NaN — same trap as Bot PORT.
-  host: "::",
+  host: appHost.host ?? "::",
   port: appPort.port,
   strictPort: true,
   proxy: {
     "/api": {
-      target: `http://localhost:${apiPort.port}`,
+      target: `http://${dialHost(apiHost.host)}:${apiPort.port}`,
     },
   },
 };

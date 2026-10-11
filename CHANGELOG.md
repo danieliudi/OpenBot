@@ -8,6 +8,13 @@ Newest first. `Unreleased` is what is on `main` and not yet tagged.
 
 ## Unreleased
 
+`SERVER_HOST` and `APP_HOST` choose the address the API server and the app listen on. Unset, both
+still listen on every interface, as before. With `OPENBOT_SINGLE_USER=true` that makes anybody on
+the same network who reaches port 3001 or 3010 the administrator, so a laptop can now set both to
+`127.0.0.1`. The server's start-up line names the address it actually bound instead of always
+printing `127.0.0.1`. See [Listen addresses](docs/configuration.md#listen-addresses) for the Bot
+callback that a loopback-only API does not answer under Docker Engine on Linux.
+
 ## 0.1.2
 
 ### CopilotKit 1.77 and AG-UI 1.0

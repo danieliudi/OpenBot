@@ -63,7 +63,8 @@ entra como o administrador fixo `dev-local-user` (`server/src/auth/dev-actor.ts:
 
 Diferenças em relação ao diagrama acima, todas sujeitas a aprovação:
 
-1. **API e App presos a loopback** (ADR-004). Sem isso, a Fase 1 não inicia.
+1. **API e App presos a loopback** via `SERVER_HOST=127.0.0.1` e `APP_HOST=127.0.0.1` (ADR-004).
+   O callback do Bot LangGraph é testado antes de qualquer chat.
 2. **Política efetiva deny-all em `enforce`** com banco novo, verificada pela linha
    `computer.policy_loaded` e por uma ação recusada (ADR-005).
 3. **Learning pausado no Admin antes do primeiro chat** e `setup-learning.ts` não executado
@@ -81,7 +82,7 @@ Diferenças em relação ao diagrama acima, todas sujeitas a aprovação:
 | [ADR-001](decisions/ADR-001-standalone.md) | Fork como aplicação autônoma, caminho B (clone) | Aceito |
 | ADR-002 | Windows + WSL2 + Docker Desktop | **Pendente**: host-alvo não observado |
 | ADR-003 | Somente dados sintéticos | Pendente de registro; sem objeção técnica |
-| [ADR-004](decisions/ADR-004-single-user-loopback.md) | Single-user só com bind comprovadamente loopback | Proposto; exige escolha de mitigação |
+| [ADR-004](decisions/ADR-004-single-user-loopback.md) | Single-user só com bind comprovadamente loopback | Aceito (variante A1); patch implementado, teste no host-alvo pendente |
 | [ADR-005](decisions/ADR-005-deny-all-enforce.md) | Política deny-all em `enforce` | Aceito |
 | [ADR-006](decisions/ADR-006-learning-paused.md) | Automatic Learning pausado | Aceito |
 | ADR-007 | Intelligence gerenciado e LLM só com orçamento e termos validados | Pendente: depende de leitura de termos e orçamento do usuário |

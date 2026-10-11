@@ -10,6 +10,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { COMPUTER_GUIDANCE } from "../../shared/bot-prompt";
 import { DICTATION_HTTP_IDLE_SECONDS } from "../../shared/dictation";
+import { dialHost } from "../../shared/listen-host";
 import { buildResponsibilityTurn } from "../../shared/responsibility-turn";
 import { workOwner } from "../../shared/work-owner";
 import { createActivityStore } from "./activity/activity";
@@ -3068,6 +3069,7 @@ const asChannelSocket = (ws: { data: SocketData }) =>
 
 serve<SocketData>({
   port,
+  ...(config.host ? { hostname: config.host } : {}),
   async fetch(request, server) {
     const url = new URL(request.url);
     if (url.pathname === "/api/audio/transcriptions") {
@@ -3277,4 +3279,8 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
   });
 }
 
-console.info(`OpenBot server listening on http://127.0.0.1:${port}`);
+console.info(
+  config.host
+    ? `OpenBot server listening on http://${dialHost(config.host)}:${port}`
+    : `OpenBot server listening on port ${port} on every interface; SERVER_HOST=127.0.0.1 keeps it to this machine`,
+);

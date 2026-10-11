@@ -71,12 +71,11 @@ próprio fork.
 1. **Host-alvo.** Rodar `bash docs/poc-personal/evidence/host-inventory.sh` no Ubuntu do WSL2 (ou no
    Linux/macOS do laboratório) e os comandos de PowerShell indicados no cabeçalho do script.
    Informar também se `.wslconfig` usa `networkingMode=mirrored`. Fecha ADR-002 e R-21.
-2. **Mitigação de R-01 (ADR-004).** Opção A escolhida em 2026-10-11. Falta definir a variante: o Bot
-   LangGraph em container chama a API em `host.docker.internal:3001` (`docker-compose.yml:378-382`),
-   endereço que um bind só em `127.0.0.1` não atende em Docker Engine no Linux.
+2. **Mitigação de R-01 (ADR-004):** variante A1 aceita e implementada em 2026-10-11, com checks
+   executados neste container ([evidência](evidence/r01-bind-patch-validation.md)). Falta o teste
+   do callback do Bot LangGraph no host-alvo.
 3. **ADR-005 (deny-all) e ADR-006 (Learning pausado):** aceitos em 2026-10-11.
-4. **Branch da Fase 1.** O plano sugere `poc/openbot-personal-lab`; esta sessão trabalha em
-   `claude/laughing-johnson-u1tefh`. Escolher uma.
+4. **Branch da Fase 1:** `claude/laughing-johnson-u1tefh`, definida em 2026-10-11.
 5. **Proteção da `main` do fork** (R-20): ativar PR obrigatório e bloqueio de force-push no GitHub.
    Alteração de configuração, só com sua autorização.
 

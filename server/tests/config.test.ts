@@ -681,6 +681,25 @@ describe("deployment configuration", () => {
     ).toBe(0);
   });
 
+  test("listens on every interface unless SERVER_HOST names one", () => {
+    expect(loadConfig(baseEnvironment).host).toBeUndefined();
+    expect(loadConfig({ ...baseEnvironment, SERVER_HOST: "" }).host).toBe(
+      undefined,
+    );
+    expect(
+      loadConfig({ ...baseEnvironment, SERVER_HOST: " 127.0.0.1 " }).host,
+    ).toBe("127.0.0.1");
+    expect(loadConfig({ ...baseEnvironment, SERVER_HOST: "::1" }).host).toBe(
+      "::1",
+    );
+  });
+
+  test("refuses a SERVER_HOST it would have to resolve", () => {
+    expect(() =>
+      loadConfig({ ...baseEnvironment, SERVER_HOST: "openbot.lan" }),
+    ).toThrow("SERVER_HOST must be an IP address");
+  });
+
   test("listens on 3001 when neither PORT nor SERVER_PORT is set", () => {
     expect(loadConfig(baseEnvironment).port).toBe(3001);
   });

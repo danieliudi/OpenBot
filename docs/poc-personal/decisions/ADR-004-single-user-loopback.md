@@ -1,6 +1,6 @@
 # ADR-004 — Single-user só com API e App comprovadamente em loopback
 
-- **Status:** Proposto. Requer escolha de mitigação pelo usuário antes da Fase 1.
+- **Status:** Aceito por Daniel Yano em 2026-10-11, variante A1.
 - **Data:** 2026-10-10 · **SHA:** `e16d90b`
 
 ## Contexto
@@ -13,7 +13,10 @@
 - A API chama `serve({ port, ... })` sem `hostname` (`server/src/index.ts:3069-3070`); o padrão do
   Bun é `0.0.0.0`. O próprio `scripts/start.sh:61-62` confirma que a porta é alcançável pela rede.
 - O App usa `host: "::"` (`app/vite.config.ts:84`), endereço curinga, e faz proxy de `/api` para a API.
-- Não existe variável de ambiente para escolher o bind de nenhum dos dois.
+- No SHA de referência não existe variável de ambiente para escolher o bind de nenhum dos dois.
+- O Bot LangGraph (padrão do clone) e o perfil `harness` chamam a API de volta em
+  `http://host.docker.internal:3001/api/agent-tools/call` (`docker-compose.yml:315, 378-382`). Em
+  Docker Engine no Linux esse nome é o gateway da bridge, que um bind só em `127.0.0.1` não atende.
 
 Logo, no caminho B padrão, qualquer dispositivo que alcance o host nas portas 3001 ou 3010 vira
 administrador. A premissa "localhost" do plano não se sustenta só pela configuração.
@@ -22,20 +25,34 @@ administrador. A premissa "localhost" do plano não se sustenta só pela configu
 
 | Opção | O que muda | Prós | Contras |
 |---|---|---|---|
-| **A. Patch mínimo na branch do laboratório** | `hostname` configurável na API (padrão `127.0.0.1`) e `host` configurável no Vite (padrão `127.0.0.1`) | Corrige na origem; testável por `lsof`; reversível por `git revert` | Diverge do upstream; precisa de teste e entrada no CHANGELOG |
+| **A. Patch mínimo na branch do laboratório** | Endereço de escuta configurável na API e no Vite, ajustado para `127.0.0.1` no laboratório | Corrige na origem; testável por `lsof`; reversível por `git revert` | Diverge do upstream; precisa de teste e entrada no CHANGELOG |
 | **B. Firewall do host** | Regra de entrada bloqueando 3001/3010 exceto loopback | Sem alteração de código | Alteração no SO do usuário; frágil (troca de rede, perfil de firewall, WSL mirrored) |
 | **C. Depender do NAT do WSL2** | Nada | Zero esforço | Comportamento depende do modo de rede do WSL (NAT vs. mirrored); suposição, não controle |
 | **D. Provedor de identidade real** | OAuth Google/Microsoft/Okta | Remove o admin anônimo | Cria conta/app OAuth; amplia escopo e superfície na Fase 1 |
 
-## Decisão proposta
+## Decisão: variante A1
 
-**A + verificação de B/C como defesa em profundidade.** Aplicar o patch em branch isolada, provar o
-bind com `lsof -nP -iTCP -sTCP:LISTEN` mostrando `127.0.0.1:3001` e `127.0.0.1:3010`, e rodar SEC-01
-a partir de outro dispositivo. Se o patch não puder ser feito, a alternativa aceitável é D; C sozinho
-não é aceito.
+1. **Código** (branch do laboratório): variáveis `SERVER_HOST` e `APP_HOST`, validadas no boot
+   (só IP literal ou `localhost`). Sem valor, o comportamento continua o do upstream (todas as
+   interfaces), para não quebrar a imagem de container nem o Helm. Com `SERVER_HOST` definido, o
+   proxy `/api` do Vite disca esse endereço. O log de boot passa a dizer o endereço real.
+2. **Laboratório**: `.env` com `SERVER_HOST=127.0.0.1` e `APP_HOST=127.0.0.1`.
+3. **Teste no host-alvo** antes de qualquer outro passo da Fase 1: um tool call do Bot LangGraph
+   precisa chegar ao servidor e gerar linha de auditoria (recusa, sob ADR-005). Se não chegar, o
+   laboratório passa para a variante A2 (API em loopback + IP da bridge Docker) ou mantém
+   `SERVER_HOST` vazio com regra de firewall restrita a loopback e rede Docker. A2 exige nova
+   aprovação, por ser mudança maior no servidor.
+
+Variantes consideradas e não escolhidas: A2 (dois listeners na API, mais código) e A3 (só o App em
+loopback, API protegida por firewall do SO).
 
 ## Critério de aceite
 
-- `lsof` sem listener `*:3001`, `*:3010`, `[::]:3001` ou `[::]:3010`.
+- `lsof -nP -iTCP -sTCP:LISTEN` sem listener `*:3001`, `*:3010`, `[::]:3001` ou `[::]:3010`.
 - SEC-01 executado de outro dispositivo: conexão recusada nas duas portas.
-- Enquanto isso não for verdade, a Fase 1 para antes do primeiro `bash scripts/start.sh`.
+- Tool call do Bot LangGraph registrado no servidor (item 3 acima).
+- Enquanto os três não forem verdade, a Fase 1 para antes de qualquer chat.
+
+## Evidência de implementação
+
+[`../evidence/r01-bind-patch-validation.md`](../evidence/r01-bind-patch-validation.md)
