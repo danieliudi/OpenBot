@@ -82,7 +82,7 @@ Diferenças em relação ao diagrama acima, todas sujeitas a aprovação:
 | ADR-002 | Windows + WSL2 + Docker Desktop | **Pendente**: host-alvo não observado |
 | ADR-003 | Somente dados sintéticos | Pendente de registro; sem objeção técnica |
 | [ADR-004](decisions/ADR-004-single-user-loopback.md) | Single-user só com bind comprovadamente loopback | Proposto; exige escolha de mitigação |
-| [ADR-005](decisions/ADR-005-deny-all-enforce.md) | Política deny-all em `enforce` | Proposto |
-| [ADR-006](decisions/ADR-006-learning-paused.md) | Automatic Learning pausado | Proposto |
+| [ADR-005](decisions/ADR-005-deny-all-enforce.md) | Política deny-all em `enforce` | Aceito |
+| [ADR-006](decisions/ADR-006-learning-paused.md) | Automatic Learning pausado | Aceito |
 | ADR-007 | Intelligence gerenciado e LLM só com orçamento e termos validados | Pendente: depende de leitura de termos e orçamento do usuário |
 | ADR-008 | MIA, Tandem, Trekup, Sanwey-OS intocados | Pendente de registro; vigente pelo plano |

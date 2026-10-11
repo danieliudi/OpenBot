@@ -1,6 +1,6 @@
 # ADR-005 — Política de ações deny-all em `enforce`
 
-- **Status:** Proposto.
+- **Status:** Aceito por Daniel Yano em 2026-10-11.
 - **Data:** 2026-10-10 · **SHA:** `e16d90b`
 
 ## Contexto
@@ -20,7 +20,7 @@
   pedidos de segredo e `humanInput`, este sem linha de auditoria (`gateway.ts:923-990`).
 - Comandos de shell são gravados por inteiro em `audit_events` (`gateway.ts:1350-1357`).
 
-## Decisão proposta
+## Decisão
 
 1. Perfil 0: `AGENT_COMPUTER_POLICY={"mode":"enforce","deny":[],"allow":[]}` com **banco novo**
    (sem política salva). Nunca `dry-run` como proteção.

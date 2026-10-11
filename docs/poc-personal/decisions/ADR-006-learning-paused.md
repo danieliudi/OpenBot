@@ -1,6 +1,6 @@
 # ADR-006 — Automatic Learning pausado durante o piloto
 
-- **Status:** Proposto.
+- **Status:** Aceito por Daniel Yano em 2026-10-11.
 - **Data:** 2026-10-10 · **SHA:** `e16d90b`
 
 ## Contexto
@@ -16,7 +16,7 @@
 - O CopilotKit Intelligence é obrigatório para o servidor subir (`server/src/config.ts:894-913`) e
   armazena threads e memória fora do host, com ou sem Learning.
 
-## Decisão proposta
+## Decisão
 
 1. Na Fase 1, **não executar `setup-learning.ts`** e não definir `CPK_INTELLIGENCE_LEARNING_CONTAINER_ID`.
 2. Antes do primeiro chat, abrir Admin → Automatic Learning, pausar e registrar evidência sem segredo.
