@@ -46,6 +46,10 @@ setting() {
 
 APP_PORT="$(setting APP_PORT 3010)"
 SERVER_PORT="$(setting SERVER_PORT 3001)"
+# Where the app and the API listen. Empty is every interface, as before these existed; the app reads
+# APP_HOST from this script's environment, so it is exported below with the ports.
+APP_HOST="$(setting APP_HOST "")"
+SERVER_HOST="$(setting SERVER_HOST "")"
 COMPUTER_PORT="$(setting COMPUTER_PORT 4100)"
 BOT_PORT="$(setting BOT_PORT 4200)"
 LANGGRAPH_PORT="$(setting LANGGRAPH_PORT 4201)"
@@ -55,11 +59,11 @@ SUPERVISOR_PORT="$(setting SUPERVISOR_PORT 4500)"
 # docs/configuration.md tells people to rely on. Read from the environment alone, `false` in `.env`
 # was ignored: the supervisor was still started and the server still told to use it.
 ONE_COMPUTER_EACH="$(setting OPENBOT_ONE_COMPUTER_EACH true)"
-export APP_PORT SERVER_PORT
+export APP_PORT SERVER_PORT APP_HOST SERVER_HOST
 SUPERVISOR_TOKEN="$(setting SUPERVISOR_TOKEN openbot-dev-supervisor-token)"
 COMPUTER_TOKEN="$(setting COMPUTER_TOKEN openbot-dev-computer-token)"
 # A fixed default is fine here, unlike `AGENT_TOOL_TOKEN` below, but not because of where the server
-# listens — it binds no hostname, so this port is reachable from the network like any other. It is
+# listens — without SERVER_HOST it binds no hostname, so the port is reachable from the network. It is
 # fine because this is a dev-only default on a machine's own dev stack, and the endpoint it guards
 # accepts nothing but an unguessable `routine_run_<uuid>` id: the server re-reads the routine, the
 # owner and the channel from its own tables rather than trusting anything else the caller says, so

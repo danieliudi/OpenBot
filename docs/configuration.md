@@ -819,6 +819,29 @@ conversations stay tellable from the other's.
 
 Set `OPENBOT_ONE_COMPUTER_EACH=false` when using `start.sh` to run all Bots against one shared computer.
 
+### Listen addresses
+
+The API server and the app listen on every interface unless told otherwise, which is what a
+container needs and what a laptop does not: with `OPENBOT_SINGLE_USER=true`, anybody on the same
+network who reaches port 3001 or 3010 is the administrator. Docker Compose already publishes its own
+services on `127.0.0.1` only; these two run on the host and have their own settings.
+
+| Setting       | Process               | Unset                 |
+| ------------- | --------------------- | --------------------- |
+| `SERVER_HOST` | API server (3001)     | every interface       |
+| `APP_HOST`    | app dev server (3010) | `::`, every interface |
+
+Each takes an IP address (`127.0.0.1`, `::1`, `0.0.0.0`) or `localhost`, and anything else stops the
+process at start. `scripts/start.sh` reads both from `.env` like the ports. With `SERVER_HOST` set to
+a specific address, the app's `/api` proxy dials that address rather than `localhost`.
+
+`agent-langgraph` and the `harness` profile call the API back at `host.docker.internal:3001`
+(`OPENBOT_TOOL_URL`). Whether that name reaches a server bound to `127.0.0.1` depends on the Docker
+runtime. Under Docker Engine on Linux it is the bridge gateway, which such a bind does not answer,
+and the Bot's tool calls then fail. After setting `SERVER_HOST`, check that a Bot's tool call reaches
+the server; where it does not, leave `SERVER_HOST` unset and close 3001 to other machines with the
+host firewall instead.
+
 ## Tenant package
 
 The tenant package contains five required YAML files, and two optional:

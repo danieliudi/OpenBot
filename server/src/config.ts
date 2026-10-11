@@ -7,6 +7,7 @@ import {
   isLearningContainerId,
   type LearningTarget,
 } from "../../shared/learning";
+import { listenHost } from "../../shared/listen-host";
 import { singleUserEnabled } from "./auth/dev-actor";
 import { normalizeDomain } from "./auth/email-domain";
 import { organizationAuthority } from "./auth/organization";
@@ -171,6 +172,8 @@ export type DeploymentConfig = {
   voice?: VoiceConfig;
   /** The port the API listens on. Named `PORT` or `SERVER_PORT`; see `serverPort`. */
   port: number;
+  /** The address the API listens on, from `SERVER_HOST`. Unset is every interface; see `listenHost`. */
+  host?: string;
   databaseUrl: string;
   keyEncryptionKey: string;
   /**
@@ -1256,6 +1259,13 @@ function serverPort(environment: Environment): number {
   return port ?? serverPort ?? DEFAULT_PORT;
 }
 
+/** `SERVER_HOST`, refused at boot when it is not an address the server can bind as written. */
+function serverHost(environment: Environment): string | undefined {
+  const host = listenHost(optional(environment, "SERVER_HOST"));
+  if (!host.ok) throw new Error(host.reason.replace(/^HOST /, "SERVER_HOST "));
+  return host.host;
+}
+
 export function loadConfig(
   environment: Environment = process.env,
 ): DeploymentConfig {
@@ -1273,6 +1283,7 @@ export function loadConfig(
 
   return {
     port: serverPort(environment),
+    host: serverHost(environment),
     transcription: transcriptionConfig(environment),
     voice: voiceConfig(environment),
     databaseUrl: required(environment, "DATABASE_URL"),
